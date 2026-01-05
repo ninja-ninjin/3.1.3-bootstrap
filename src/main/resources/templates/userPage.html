@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <title>Страница пользователя</title>
+</head>
+<body>
+<h1>Добро пожаловать, <span th:text="${user.username}">User</span></h1>
+<p>Имя: <span th:text="${user.username}">User</span></p>
+<p>Пароль: <span th:text="${user.password}">User</span></p>
+<p>Почта: <span th:text="${user.email}">User</span></p>
+<p>Роли:</p>
+<ul>
+    <li th:each="role : ${user.roles}" th:text="${role.name}"></li>
+</ul>
+<br/>
+<br/>
+<form th:action="@{/logout}" th:method="POST">
+    <input type="submit" value="Logout"/>
+</form>
+</body>
+</html>
