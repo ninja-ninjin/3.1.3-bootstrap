@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.entities.User;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
@@ -27,23 +28,23 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("Пользователь " + username + " не найден ");
-        }
-        return user;
+        return userRepository.findByEmailWithRoles(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь " + username + " не найден "));
     }
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return userRepository.findAllWithRoles();
     }
 
     public User getUserById(int id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findByIdWithRoles(id).orElse(null);
     }
 
     @Transactional
     public void saveUser(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new EntityExistsException("Пользователь уже существует: " + user.getEmail());
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
@@ -51,7 +52,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void updateUser(User updatedFields) {
         User existingUser = userRepository.findById(updatedFields.getId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
 
         if (updatedFields.getFirstName() != null) {
             existingUser.setFirstName(updatedFields.getFirstName());

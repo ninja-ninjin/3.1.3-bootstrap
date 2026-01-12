@@ -21,4 +21,13 @@ public class RoleService {
     public List<Role> findAll() {
         return roleRepository.findAll();
     }
+
+    @Transactional
+    public Role createRoleIfNotExists(String roleName) {
+        return roleRepository.findByName(roleName)
+                .orElseGet(() -> {
+                    Role role = new Role(roleName);
+                    return roleRepository.save(role);
+                });
+    }
 }
